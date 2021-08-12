@@ -1,0 +1,314 @@
+---
+title: "EDS 221 Day 4 Computational Tasks"
+author: "Halina Do-Linh"
+date: "8/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(palmerpenguins)
+library(tidyverse)
+```
+
+## Code Warm-up
+```{r}
+quarter_splits <- c(1.0, 1.1, 1.2, 1.1, 1.4, 1.5, 1.6, 1.4)
+
+tot_time <- vector(mode = "numeric", length = length(quarter_splits) - 1)
+
+for (i in 1:(length(quarter_splits) - 1)) {
+  tot_time[i] <- (quarter_splits[i] + (quarter_splits[i + 1]))
+}
+
+tot_time
+
+# another way to write this for readability:
+
+# for (i in 1:(length(quarter_splits) - 1)) {
+#   half_mile <- quarter_splits[i] + quarter_splits[i + 1]
+#   half_splits[i] <- half_mile
+# }
+
+# can still use (seq_along(length) - 1) because quarter_splits[0] will call out numeric "0" and that means there are technically 8 positions
+
+```
+
+## Basic Function Structure Practice
+```{r}
+birddog_sum <- function(bird, dog) {
+  
+  if (bird > 50) {
+    stop("Birds can't be greater than 50")
+  }
+  
+  if (bird < 10) {
+    message("Cool little bird!")
+  }
+  
+  if (dog < 10) {
+    warning("Can a dog be less than 10 pounds?")
+  }
+  
+  add_birddog <- bird + dog
+  return(add_birddog)
+}
+
+bird100_dog5 <- birddog_sum(bird = 100, dog = 5)
+
+bird3_dog5 <- birddog_sum(3, 5)
+
+bird3_dog08 <- birddog_sum(3, 8)
+
+# How can the code break? Important to think about and it's nice that R has built in error messages.
+
+# birddog_sum(bird = "hawk", dog = 10)
+
+```
+
+## Making a function using characters
+```{r}
+say_hello <- function(friend, weekday) {
+  print(paste("Hello,", friend, "have a great", weekday, "!"))
+}
+
+say_hello(friend = "Halina", weekday = "Friday")
+
+```
+
+
+## Print Versus Return Example
+```{r}
+find_mulitple <- function(a, b) {
+  my_multiplication <- a * b
+  print(my_multiplication)
+}
+
+find_mulitple(a = 10, b = 6)
+
+find_mulitple(a = 10, b = 6) + 12
+
+# Do not use print(), use return() instead
+# In python there will be an error message because print() doesn't store anything.
+```
+
+## Functions with Conditions
+```{r}
+animal_age <- function(animal, age) {
+  
+# This is saying that if animal is not dog or goat it will result in an error message
+  if (!animal %in% c("dog", "goat")) {
+   stop("Animal must be a dog or a goat") 
+  }
+  
+  if (animal == "dog") {
+    creature_age <- age * 7
+  }
+  
+  else if (animal == "goat") {
+    creature_age <- age * 4.7
+  }
+  
+  return(creature_age)
+}
+
+animal_age("dog", 12)
+
+animal_age("goat", 4)
+
+animal_age("zebra", 3)
+# Error here because zebra has not been defined in the function
+
+# use ! to say "not"
+# stop() does not run your code. It stops your code from running and displays an error because a condition has not been met. 
+# warning() will still run your code. Use this to let people know they may not expect the result they get.
+# If you try to knit code that has an error in it, you can comment it out or add a code in the header that says eval = FALSE
+```
+
+## More functions - this time using penguins!
+```{r}
+adelie_gentoo <- penguins %>% 
+  filter(species %in% c("Adelie", "Gentoo"))
+
+# %in% Does this match "Adelie" or "Gentoo" in this row? If it matches then it is kept, if not then the row will be removed
+# Does this match anything in this vector of values?
+# %in% goes by row
+```
+
+```{r}
+adelie_gentoo_wrong <- penguins %>% 
+  filter(species == c("Adelie", "Gentoo"))
+
+# What is happening here? We are missing data. When we use `==` aka exact match so it will recycle this vector pattern until it gets to the end of the vector. So it's explicitly asking is the first row Adelie? Is the second row Gentoo? and then it will ask that pattern over and over again.  
+# == goes by line trying to match an exact pattern 
+```
+
+## Combine functions and for loops
+```{r}
+df_means <- function(df) {
+  for (i in 1:ncol(df)) {
+    col_mean <- mean(df[[i]], na.rm = TRUE)
+    column_name <- colnames(df[i])
+    print(paste("The mean of", column_name, "is", col_mean))
+  }
+}
+
+# colnames(df[i]) will return that column name as a string
+
+# update this function 
+
+# if you're not certain about your code - test it ! A good df is mtcars because it has all numeric values. Work with the simplest datasets
+
+df_means(mtcars)
+ncol(mtcars)
+
+```
+
+Make a subset of only structural size variables from the penguins dataset for chinstrap.
+```{r}
+# at EVERY step of the pipe operator run it and then view the dataset you've made! This is CRUCIAL.
+
+chinstrap_sizes <- penguins %>% 
+  filter(species == "Chinstrap") %>% 
+  select(flipper_length_mm, body_mass_g, bill_length_mm, bill_depth_mm)
+
+df_means(chinstrap_sizes)
+
+# Ran df_means() that we just made on penguins df to show how error messages come up based on NA or missing values and data types that are not numeric aka can't take the mean of non-numeric functions
+df_means(penguins)
+
+```
+## Condition to check class of an input
+```{r}
+lunchtime <- function(tacos, price_per){
+
+  # (is.numeric(tacos) == FALSE) is asking does FALSE match FALSE? Is this matching FALSE? If yes matching, return stop() message aka error message
+  # another way to write this as !is.numeric(tacos)
+  if ((is.numeric(tacos) == FALSE)){
+    stop("You must input a number of tacos.")
+  } 
+  
+  tot_price <- tacos * price_per
+  return(tot_price)
+}
+
+lunchtime(tacos = "bananas", price_per = 2.50)
+
+# is.something is a question that returns as true or false
+# as.something changes....
+
+```
+## Use values from a data frame to calculate something based on user input
+```{r}
+# Calculate the groundwater transport rate
+gw_rate <- function(site) {
+  
+  gw_slope_depth <- data.frame(sitename = c("mountain", "prairie", "desert", "beach"),
+                               depth = c(32, 41, 63, 2),
+                               slope = c(11.2, 0.4, 0.8, 2.6)) 
+  
+site_select <- dplyr::filter(gw_slope_depth, sitename == site)
+
+transport_rate <- 1.4 * site_select$slope + 3.6 * site_select$depth
+
+return(transport_rate)
+  }
+
+# My data frame is not coming up complete 
+# another way to write site_select: gw_slope_depth %>% filter(sitename == site)
+
+gw_rate(site = "beach")
+```
+
+### Now using switch()
+```{r}
+gw_rate_switch <- function(site) {
+  
+  gw_slope_depth <- switch(site,
+                           "mountain" = c(32, 11.2),
+                           "praire" = c(41, 0.4),
+                           "desert" = c(63, 0.8),
+                           "beach" = c(2, 2.6))
+  
+  transport_rate <- 1.4 * gw_slope_depth[2] + 3.6 * gw_slope_depth[1]
+  
+  return(transport_rate)
+}
+
+gw_rate_switch(site = "beach")
+
+# switch() will select one of a list of alternative. So if my input is this, this will be my parameters. 
+# remember that [2] refers to columns and refers to [1] rows?
+
+# these examples were about calling different elements in a df and using them 
+```
+
+### Logistic growth equation and Functions
+```{r}
+logistic_growth <- function(K, N0, r, time) {
+ Nt <- K / (1 + (1 + (K - N0) / N0) * exp(-r * time))
+  print(Nt)
+}
+
+logistic_growth(K = 5000, N0 = 200, r = 0.43, time = 6)
+
+time_vec <- seq(from = 0, to = 35, by = 0.1)
+bacterial_growth <- logistic_growth(K = 5000, N0 = 200, r = 0.43, time = time_vec)
+bacterial_df <- data.frame(time_vec, bacterial_growth)
+logistic_growth(K = 5000, N0 = 200, r = 0.43, time = time_vec)
+
+logistic_growth_plot <- ggplot(data = bacterial_df, aes(x = time_vec, y = bacterial_growth)) +
+  geom_point()
+
+logistic_growth_plot
+
+# function notation automation use shortcut cmd + option + X
+# need to type out the right side the equation, name the function, and then it will set up the function automatically
+```
+
+```{r}
+r_seq <- seq(from = 0.20, to = 0.40, by = 0.01)
+time_vec <- seq(from = 0, to = 35, by = 0.1)
+
+out_matrix <- matrix(ncol = length(r_seq), nrow = length(time_vec))
+
+# N0 = 100, K = 6000
+
+for (i in seq_along(r_seq)) {
+  for (j in seq_along(time_vec)) {
+    pop <- logistic_growth(K = 6000, N0 = 100, r = r_seq[i], time = time_vec[j])
+    out_matrix[j, i] <- pop
+  }
+}
+
+# inner for loop (j) is iterating over rate (i)
+# the first element in r_seq will iterate over all the elements in j before moving to the second element to populate the second column 
+# we made out_matrix[j, i] because we decided we wanted to see rate values in columns and time values in rows
+
+View(out_matrix)
+```
+
+### Time to wrangle our data...
+```{r}
+out_df <- data.frame(time = time_vec, out_matrix)
+
+```
+
+#### Update column names
+```{r}
+colnames(out_df) <- c("time", paste0("gr_", r_seq))
+```
+
+### Use `piovt_longer` to get a long form or tidy version of data
+```{r}
+out_df_long <- out_df %>% 
+  pivot_longer(-time, names_to = "growth_rate", values_to = "population")
+```
+
+### Time to graph!
+```{r}
+ggplot(data = out_df_long, aes(x = time, y = population)) +
+  geom_line(aes(color = growth_rate)) +
+  labs(x = "Time", y = "Population Growth")
+```
+
